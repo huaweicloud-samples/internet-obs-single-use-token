@@ -1,0 +1,80 @@
+###############################################################################
+# Terraform 变量示例
+# ----------------------------------------------------------------------------
+# 使用方式：
+#   Copy-Item terraform.tfvars.example terraform.tfvars
+#   然后按注释填写必填项。敏感项建议改用 TF_VAR_<name> 环境变量注入。
+###############################################################################
+
+# ----- 基础 -----
+
+region       = "cn-north-4"
+project_name = "internet-obs-single-use-token"
+
+# ----- 对象存储 -----
+
+# 全局唯一的桶名，建议带项目前缀与随机后缀
+obs_bucket_name = "<globally-unique-bucket-name>"
+
+# 存放函数代码包的桶名，可与上面相同
+code_bucket_name = "<globally-unique-bucket-name>"
+
+# 示例对象键（签名 URL 的目标对象）
+obs_object_key = "sample-image.png"
+
+# 本地示例图片路径；留空则不上传
+sample_image_path = "../assets/sample-image.png"
+
+# ----- 宽表数据库 -----
+
+geminidb_instance_name = "token-store"
+token_table_name       = "single-use-tokens"
+
+# 实例管理员密码；建议用 TF_VAR_geminidb_password 注入
+geminidb_password = "<instance-admin-password>"
+
+# 节点规格（宽表协议兼容接口复用宽表规格族）
+geminidb_flavor_spec = "geminidb.cassandra.large.4"
+
+# 可用区：集群形态需 3 个，逗号分隔
+geminidb_availability_zone = "cn-north-4a,cn-north-4b,cn-north-4c"
+
+# 节点数（集群形态 3-12）与单节点磁盘容量（GB，10 的倍数）
+geminidb_node_num     = 3
+geminidb_storage_size = 100
+
+# ----- 函数 -----
+
+function_name     = "token-handler"
+code_object_key   = "function-code/token-handler.zip"
+function_memory_size = 512
+function_timeout     = 30
+
+# token 有效期与签名 URL 有效期（秒）
+token_ttl_seconds        = 3600
+presigned_url_expiration = 300
+
+function_log_level = "INFO"
+
+# 本地代码包路径。非空时由 IaC 上传并托管该对象，
+# 代码变更会自动触发函数重建（先执行 scripts/package-function.ps1 生成）。
+code_zip_path = "../dist/token-handler.zip"
+
+# ----- API 网关 -----
+
+# 应用认证 AppCode；建议用 TF_VAR_apig_appcode 注入
+apig_appcode = "<your-32-char-appcode>"
+
+apig_environment = "RELEASE"
+
+# 限流策略：时间窗内单 API 最大请求数
+apig_max_api_requests      = 100
+apig_throttle_period       = 1
+apig_throttle_period_unit  = "MINUTE"
+
+# ----- 可选：Web 应用防火墙 -----
+
+# 该服务为可选付费服务，默认关闭
+# enable_waf = true
+# waf_domain_name = "<your-domain>"
+# waf_protection_level = 1
